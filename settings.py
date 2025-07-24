@@ -3,7 +3,7 @@ Alien Invasion - Slightly Altered
 Jeroldine Oakley [author]
 This is a slightly altered version of the Alien Invasion game from the 
 CSCI 1511 class/textbook.
-07/16/25
+07/23/25
 """
 class Settings:
     """A class to store all settings for Alien Invasion."""
@@ -24,3 +24,7 @@ class Settings:
         self.bullet_height = 3
         self.bullet_color = (60, 60, 60)
         self.bullets_allowed = 3
+
+        # Alien settings - created/modified for horizontal fleet layout and movement
+        self.alien_speed = 1.0
+        self.fleet_drop_speed = 10
