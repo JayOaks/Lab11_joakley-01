@@ -26,6 +26,6 @@ class Settings:
         self.bullets_allowed = 3
 
         # Alien settings - created/modified for horizontal fleet layout and movement
-        self.alien_speed = 1.0
-        self.alien_left_movement = 0.5
+        self.alien_speed = 0.5
+        self.alien_left_movement = 0.1
         self.fleet_drop_speed = 5
