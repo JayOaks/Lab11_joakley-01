@@ -37,8 +37,8 @@ class AlienInvasion:
 
         # Create an alien fleet
         alien = Alien(self)
-        starting_x = self.screen.get_rect().right - alien.rect.width
-        self._create_fleet(starting_x)
+        self.current_column_count = 1
+        self._create_fleet()
 
     def run_game(self):
         # Call the event handler
@@ -83,25 +83,28 @@ class AlienInvasion:
         if len(self.bullets) < self.settings.bullets_allowed:
             new_bullet = Bullet(self)
             self.bullets.add(new_bullet)
+    
 
+    # Create a vertical column of aliens
+    def _create_alien_column(self, column_x, alien_height):
+        """Create a vertical column of aliens."""
+        for row_number in range(5):
+            alien_y = alien_height + 2 * alien_height * row_number
+            alien = Alien(self, column_x, alien_y)
+            self.aliens.add(alien)
 
-    def _create_fleet(self, start_x):
-        """Creates the vertical alien fleet."""
+    # Create a fleet of aliens
+    def _create_fleet(self):
         alien = Alien(self)
-        alien_width, alien_height = alien.rect.size
+        alien_width = alien.rect.width
+        alien_height = alien.rect.height
+        total_width = self.current_column_count * 2 * alien_width
+        start_x = (self.screen.get_width() - total_width) // 2
+        
+        for column_number in range(self.current_column_count):
+            column_x = start_x + column_number * 2 * alien_width
+            self._create_alien_column(column_x, alien_height)
 
-        # Calculate the number of aliens in a column
-        available_space_y = self.settings.screen_height - (2 * alien_height)
-        number_aliens_y = available_space_y // (alien_height + 10)
-
-        # Create the fleet of aliens
-        for alien_number in range(number_aliens_y):
-                alien = Alien(self)
-                alien.rect.x = start_x
-                alien.rect.y = alien_height + alien_number * (alien_height + 10)
-                alien.x = float(alien.rect.x)
-                alien.y = float(alien.rect.y)
-                self.aliens.add(alien)
     
     def _update_aliens(self):
         """Tracks and updates alien(s) count/actions."""
@@ -126,6 +129,7 @@ class AlienInvasion:
         """Resets the game."""
         self.aliens.empty()
         self.bullets.empty()
+        self.current_column_count = 1
         self._create_fleet()
         self.ship.rect.midleft = self.screen.get_rect().midleft
 
@@ -149,6 +153,9 @@ class AlienInvasion:
             bullet.draw_bullet()
         self.ship.blitme()
         self.aliens.draw(self.screen)
+        if not self.aliens:
+            self.current_column_count = min(self.current_column_count + 1, 6)
+            self._create_fleet()
 
         pygame.display.flip()
 

@@ -13,7 +13,7 @@ from pygame.sprite import Sprite
 class Alien(Sprite):
     """A class to represent a single alien."""
 
-    def __init__(self, ai_game):
+    def __init__(self, ai_game, x=None, y=None):
         """Initialize the alien and set its starting position."""
         super().__init__()
         self.screen = ai_game.screen
@@ -24,8 +24,8 @@ class Alien(Sprite):
         self.rect = self.image.get_rect()
 
         # Start each alien near the right edge of the screen.
-        self.rect.x = ai_game.screen.get_rect().right
-        self.rect.y = 0
+        self.rect.x = x if x is not None else self.screen.get_rect().right
+        self.rect.y = y if y is not None else 0
 
         # Store the alien’s exact horizontal position.
         self.x = float(self.rect.x)
