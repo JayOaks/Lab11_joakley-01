@@ -20,21 +20,31 @@ class Alien(Sprite):
         self.settings = ai_game.settings
 
         # Load the alien image and set its rect.
-        self.image = pygame.image.load('images/alien.bmp')
+        self.image = pygame.image.load('Assets/images/enemy_4.png')
         self.rect = self.image.get_rect()
 
         # Start each alien near the right edge of the screen.
-        self.rect.x = self.settings.screen_width - self.rect.width
-        self.rect.y = self.rect.height
+        self.rect.x = ai_game.screen.get_rect().right
+        self.rect.y = 0
 
         # Store the alien’s exact horizontal position.
         self.x = float(self.rect.x)
+        self.y = float(self.rect.y)
+        self.vertical_direction = 1
 
     def update(self):
-        """Move the alien leftward across the screen."""
+        """Move the alien rightward across the screen."""
         # Towards the ship on the left side
-        self.x -= self.settings.alien_speed
+        self.y += self.settings.alien_speed * self.vertical_direction
+        self.x -= self.settings.alien_left_movement
+
+        # Update the rect position
+        self.rect.y = self.y
         self.rect.x = self.x
+
+        # Change direction if the alien reaches the top or bottom of the screen
+        if self.rect.bottom >= self.screen.get_rect().bottom or self.rect.top <= 0:
+            self.vertical_direction *= -1
 
     def check_left_edge(self):
         """Return True if alien has reached the left edge of the screen."""

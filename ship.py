@@ -19,7 +19,7 @@ class Ship:
         self.screen_rect = ai_game.screen.get_rect()
 
         # Load the ship image and get its rect.
-        self.image = pygame.image.load('images/ship.bmp')
+        self.image = pygame.image.load('Assets/images/ship.png')
 
         # Rotate the ship image to face right.
         self.image = pygame.transform.rotate(self.image, -90)
@@ -34,6 +34,7 @@ class Ship:
         # Movement flags; start with a ship that's not moving.
         self.moving_up = False
         self.moving_down = False
+        self.screen_rect = self.screen.get_rect()
 
     def update(self):
         """Update the ship's position based on movement flags."""
