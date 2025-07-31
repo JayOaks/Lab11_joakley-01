@@ -14,6 +14,7 @@ from alien import Alien
 from settings import Settings
 from ship import Ship
 from bullet import Bullet
+from button import Button
 
 
 class AlienInvasion:
@@ -40,6 +41,13 @@ class AlienInvasion:
         self.current_column_count = 1
         self._create_fleet()
 
+        # Call button class to draw play button
+        self.play_button = Button(self, "Play")
+
+        # Game state
+        self.game_active = False
+
+
     def run_game(self):
         # Call the event handler
         while True:
@@ -59,6 +67,10 @@ class AlienInvasion:
                 self._check_keydown_events(event)
             elif event.type == pygame.KEYUP:
                 self._check_keyup_events(event)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                if self.play_button.rect.collidepoint(mouse_pos):
+                    self._reset_game()
 
     def _check_keydown_events(self, event):
         """Respond to keypresses."""
@@ -127,6 +139,8 @@ class AlienInvasion:
 
     def _reset_game(self):
         """Resets the game."""
+        self.game_active = True
+        pygame.mouse.set_visible(False)
         self.aliens.empty()
         self.bullets.empty()
         self.current_column_count = 1
@@ -156,6 +170,8 @@ class AlienInvasion:
         if not self.aliens:
             self.current_column_count = min(self.current_column_count + 1, 6)
             self._create_fleet()
+        if not self.game_active:
+            self.play_button.draw_button()
 
         pygame.display.flip()
 
