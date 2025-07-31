@@ -15,6 +15,9 @@ from settings import Settings
 from ship import Ship
 from bullet import Bullet
 from button import Button
+from game_stats import GameStats
+from scoreboard import Scoreboard
+from time import sleep
 
 
 class AlienInvasion:
@@ -47,15 +50,44 @@ class AlienInvasion:
         # Game state
         self.game_active = False
 
+        # Storing game statistics
+        self.stats = GameStats(self)
+        self.sb = Scoreboard(self)
+
+    def _start_game(self):
+        """Initialize game settings when Play is clicked."""
+        self.game_active = True
+        pygame.mouse.set_visible(False)
+        
+        # Reset dynamic game elements
+        self.bullets.empty()
+        self.aliens.empty()
+        
+        # Position the ship
+        self.ship.rect.midleft = self.screen.get_rect().midleft
+        
+        # Recreate alien fleet
+        self.current_column_count = 1
+        self._create_fleet()
+        
+        # Reset scoreboard, level and lives
+        self.stats.reset_stats()
+        self.sb.prep_score()
+        self.sb.prep_ships()
+
+
 
     def run_game(self):
         # Call the event handler
         while True:
             self._check_events()
-            self.ship.update()
-            self.bullets.update()
-            self._update_aliens()
-            self._delete_bullets()
+
+            if self.game_active:
+                self.ship.update()
+                self.bullets.update()
+                self._update_aliens()
+                self._delete_bullets()
+            
             self._update_screen()
 
     def _check_events(self):
@@ -69,8 +101,8 @@ class AlienInvasion:
                 self._check_keyup_events(event)
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
-                if self.play_button.rect.collidepoint(mouse_pos):
-                    self._reset_game()
+                if self.play_button.rect.collidepoint(mouse_pos) and not self.game_active:
+                    self._start_game()
 
     def _check_keydown_events(self, event):
         """Respond to keypresses."""
@@ -124,7 +156,7 @@ class AlienInvasion:
 
         # Check for when the alien(s) hits the ship
         if pygame.sprite.spritecollideany(self.ship, self.aliens):
-            self._reset_game()
+            self._ship_hit()
         
         # Check for when the alien(s) reaches the left edge of the screen
         self._check_aliens_left()
@@ -133,14 +165,32 @@ class AlienInvasion:
         """Checks if alien(s) has reached the left edge of the screen."""
         for alien in self.aliens.sprites():
             if alien.rect.left <= 0:
-                self._reset_game()
+                self._ship_hit()
                 break
+    
+    
+    def _ship_hit(self):
+        """Respond to ship being hit by alien."""
+        if self.stats.ships_left > 0:
+            self.stats.ships_left -= 1
+            self.sb.prep_ships()
+
+            self.aliens.empty()
+            self.bullets.empty()
+
+            self._create_fleet()
+            self.ship.center_ship()
+            
+            sleep(0.5)
+        else:
+            self.game_active = False
+            pygame.mouse.set_visible(True)
 
 
     def _reset_game(self):
         """Resets the game."""
-        self.game_active = True
-        pygame.mouse.set_visible(False)
+        self.game_active = False
+        pygame.mouse.set_visible(True)
         self.aliens.empty()
         self.bullets.empty()
         self.current_column_count = 1
@@ -159,6 +209,10 @@ class AlienInvasion:
         
         # Check for collisions between bullets and aliens
         collisions = pygame.sprite.groupcollide(self.bullets, self.aliens, True, True)
+        if collisions:
+            for aliens in collisions.values():
+                self.stats.score += self.settings.alien_points
+            self.sb.prep_score()
 
     def _update_screen(self):
         """Update images on the screen, and flip to the new screen."""
@@ -167,6 +221,7 @@ class AlienInvasion:
             bullet.draw_bullet()
         self.ship.blitme()
         self.aliens.draw(self.screen)
+        self.sb.show_score()
         if not self.aliens:
             self.current_column_count = min(self.current_column_count + 1, 6)
             self._create_fleet()
